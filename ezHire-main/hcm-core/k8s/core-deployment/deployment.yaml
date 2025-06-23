@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hcm-core
+  labels:
+    app: hcm-core
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hcm-core
+  template:
+    metadata:
+      labels:
+        app: hcm-core
+    spec:
+      containers:
+        - name: hcm-core
+          image: techbu/hcm-core:latest
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: hcm-core-config
+            - secretRef:
+                name: hcm-core-secrets 
