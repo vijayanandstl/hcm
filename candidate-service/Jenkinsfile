@@ -14,26 +14,57 @@ pipeline {
                 checkout scm
             }
         }
+
+        stage('Build hcm-common') {
+            steps {
+                dir('hcm-common') {
+                    sh 'mvn clean install'
+                }
+            }
+        }
+
+        stage('Build Service JAR') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'nexus-credentials', usernameVariable: 'NEXUS_USER', passwordVariable: 'NEXUS_PASS')]) {
+                    writeFile file: 'settings.xml', text: """
+<settings>
+  <servers>
+    <server>
+      <id>nexus</id>
+      <username>${NEXUS_USER}</username>
+      <password>${NEXUS_PASS}</password>
+    </server>
+  </servers>
+</settings>
+"""
+                    dir('candidate-service') {
+                        sh 'mvn clean package -s ../settings.xml'
+                    }
+                }
+            }
+        }
         
         stage('Docker Build & Push') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'docker-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh '''
-                        echo "Logging into Docker Hub..."
-                        echo "$DOCKER_PASS" | docker login -u $DOCKER_USER --password-stdin || exit 1
-                        
-                        echo "Building Docker image..."
-                        docker build -t $DOCKER_IMAGE:$DOCKER_TAG . || exit 1
-                        
-                        echo "Tagging latest image..."
-                        docker tag $DOCKER_IMAGE:$DOCKER_TAG $DOCKER_IMAGE:latest || exit 1
-                        
-                        echo "Pushing versioned image..."
-                        docker push $DOCKER_IMAGE:$DOCKER_TAG || exit 1
-                        
-                        echo "Pushing latest image..."
-                        docker push $DOCKER_IMAGE:latest || exit 1
-                    '''
+                    dir('candidate-service') {
+                        sh '''
+                            echo "Logging into Docker Hub..."
+                            echo "$DOCKER_PASS" | docker login -u $DOCKER_USER --password-stdin || exit 1
+                            
+                            echo "Building Docker image..."
+                            docker build -t $DOCKER_IMAGE:$DOCKER_TAG . || exit 1
+                            
+                            echo "Tagging latest image..."
+                            docker tag $DOCKER_IMAGE:$DOCKER_TAG $DOCKER_IMAGE:latest || exit 1
+                            
+                            echo "Pushing versioned image..."
+                            docker push $DOCKER_IMAGE:$DOCKER_TAG || exit 1
+                            
+                            echo "Pushing latest image..."
+                            docker push $DOCKER_IMAGE:latest || exit 1
+                        '''
+                    }
                 }
             }
         }
@@ -42,6 +73,7 @@ pipeline {
             steps {
                 script {
                     withCredentials([file(credentialsId: 'kubeconfig-jenkins', variable: 'KUBECONFIG')]) {
+                        sh 'ls -l candidate-service/k8s/'
                         sh """
                             echo "Verifying cluster access..."
                             kubectl --kubeconfig=$KUBECONFIG cluster-info || exit 1
@@ -50,26 +82,39 @@ pipeline {
                             kubectl --kubeconfig=$KUBECONFIG create namespace $KUBE_NAMESPACE --dry-run=client -o yaml | kubectl --kubeconfig=$KUBECONFIG apply -f - || exit 1
                             
                             echo "Applying ConfigMap..."
-                            kubectl --kubeconfig=$KUBECONFIG apply -f k8s/candidate-deployment/configmap.yaml || exit 1
+                            kubectl --kubeconfig=$KUBECONFIG apply -f candidate-service/k8s/configmap.yaml || exit 1
                             
                             echo "Applying Secrets (if present)..."
-                            if [ -f k8s/candidate-deployment/secrets.yaml ]; then
-                              kubectl --kubeconfig=$KUBECONFIG apply -f k8s/candidate-deployment/secrets.yaml || exit 1
+                            if [ -f candidate-service/k8s/secrets.yaml ]; then
+                              kubectl --kubeconfig=$KUBECONFIG apply -f candidate-service/k8s/secrets.yaml || exit 1
                             fi
                             
                             echo "Applying Service..."
-                            kubectl --kubeconfig=$KUBECONFIG apply -f k8s/candidate-deployment/service.yaml || exit 1
+                            kubectl --kubeconfig=$KUBECONFIG apply -f candidate-service/k8s/service.yaml || exit 1
                             
                             echo "Checking if deployment exists..."
                             if ! kubectl --kubeconfig=$KUBECONFIG get deployment candidate-service -n $KUBE_NAMESPACE &>/dev/null; then
                                 echo "Deployment does not exist. Creating initial deployment..."
-                                kubectl --kubeconfig=$KUBECONFIG apply -f k8s/candidate-deployment/deployment.yaml || exit 1
+                                kubectl --kubeconfig=$KUBECONFIG apply -f candidate-service/k8s/deployment.yaml || exit 1
                             else
                                 echo "Updating existing deployment with new image..."
                                 kubectl --kubeconfig=$KUBECONFIG set image deployment/candidate-service \
                                     candidate-service=$DOCKER_IMAGE:$DOCKER_TAG \
                                     -n $KUBE_NAMESPACE || exit 1
                             fi
+                            
+                            echo "Waiting for deployment resource to be available..."
+                            for i in {1..10}; do
+                              kubectl --kubeconfig=$KUBECONFIG get deployment candidate-service -n $KUBE_NAMESPACE && break
+                              echo "Deployment not found yet. Waiting 3 seconds..."
+                              sleep 3
+                            done
+                            
+                            echo "Recent events in namespace..."
+                            kubectl --kubeconfig=$KUBECONFIG get events -n $KUBE_NAMESPACE --sort-by=.metadata.creationTimestamp | tail -20
+                            
+                            echo "All resources in namespace..."
+                            kubectl --kubeconfig=$KUBECONFIG get all -n $KUBE_NAMESPACE
                             
                             echo "Waiting for deployment to complete..."
                             kubectl --kubeconfig=$KUBECONFIG rollout status deployment/candidate-service -n $KUBE_NAMESPACE || exit 1
