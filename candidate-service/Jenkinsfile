@@ -73,6 +73,12 @@ pipeline {
             steps {
                 script {
                     withCredentials([file(credentialsId: 'kubeconfig-jenkins', variable: 'KUBECONFIG')]) {
+                        sh 'echo ==== Jenkins Kubeconfig Diagnostics ===='
+                        sh 'kubectl --kubeconfig=$KUBECONFIG config get-contexts'
+                        sh 'kubectl --kubeconfig=$KUBECONFIG config current-context'
+                        sh 'kubectl --kubeconfig=$KUBECONFIG cluster-info'
+                        sh 'kubectl --kubeconfig=$KUBECONFIG get ns'
+                        sh 'kubectl --kubeconfig=$KUBECONFIG get all --all-namespaces'
                         sh 'ls -l candidate-service/k8s/'
                         sh """
                             echo "Verifying cluster access..."
@@ -82,20 +88,20 @@ pipeline {
                             kubectl --kubeconfig=$KUBECONFIG create namespace $KUBE_NAMESPACE --dry-run=client -o yaml | kubectl --kubeconfig=$KUBECONFIG apply -f - || exit 1
                             
                             echo "Applying ConfigMap..."
-                            kubectl --kubeconfig=$KUBECONFIG apply -f candidate-service/k8s/configmap.yaml || exit 1
+                            kubectl --kubeconfig=$KUBECONFIG apply -n $KUBE_NAMESPACE -f candidate-service/k8s/configmap.yaml || exit 1
                             
                             echo "Applying Secrets (if present)..."
                             if [ -f candidate-service/k8s/secrets.yaml ]; then
-                              kubectl --kubeconfig=$KUBECONFIG apply -f candidate-service/k8s/secrets.yaml || exit 1
+                              kubectl --kubeconfig=$KUBECONFIG apply -n $KUBE_NAMESPACE -f candidate-service/k8s/secrets.yaml || exit 1
                             fi
                             
                             echo "Applying Service..."
-                            kubectl --kubeconfig=$KUBECONFIG apply -f candidate-service/k8s/service.yaml || exit 1
+                            kubectl --kubeconfig=$KUBECONFIG apply -n $KUBE_NAMESPACE -f candidate-service/k8s/service.yaml || exit 1
                             
                             echo "Checking if deployment exists..."
                             if ! kubectl --kubeconfig=$KUBECONFIG get deployment candidate-service -n $KUBE_NAMESPACE &>/dev/null; then
                                 echo "Deployment does not exist. Creating initial deployment..."
-                                kubectl --kubeconfig=$KUBECONFIG apply -f candidate-service/k8s/deployment.yaml || exit 1
+                                kubectl --kubeconfig=$KUBECONFIG apply -n $KUBE_NAMESPACE -f candidate-service/k8s/deployment.yaml || exit 1
                             else
                                 echo "Updating existing deployment with new image..."
                                 kubectl --kubeconfig=$KUBECONFIG set image deployment/candidate-service \
