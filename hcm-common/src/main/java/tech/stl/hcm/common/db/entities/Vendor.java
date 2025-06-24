@@ -18,11 +18,11 @@ public class Vendor extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tenant_id", nullable = false)
-    private Tenant tenant;
+    private UUID tenantId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organization_id", nullable = false)
-    private Organization organization;
+    private UUID organizationId;
 
     @Column(name = "vendor_name", length = 200, nullable = false)
     private String vendorName;
@@ -41,5 +41,5 @@ public class Vendor extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "status_id", nullable = false)
-    private VendorStatus status;
+    private Integer statusId;
 } 

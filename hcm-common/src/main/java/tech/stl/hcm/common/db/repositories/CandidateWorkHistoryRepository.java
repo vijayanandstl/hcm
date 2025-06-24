@@ -8,5 +8,5 @@ import java.util.UUID;
 
 @Repository
 public interface CandidateWorkHistoryRepository extends JpaRepository<CandidateWorkHistory, Integer> {
-    List<CandidateWorkHistory> findByCandidate_CandidateId(UUID candidateId);
+    List<CandidateWorkHistory> findByCandidateId(UUID candidateId);
 }

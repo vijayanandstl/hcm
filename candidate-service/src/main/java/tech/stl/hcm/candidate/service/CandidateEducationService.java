@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface CandidateEducationService {
-    CandidateEducationDTO createCandidateEducation(CandidateEducationDTO candidateEducationDTO);
+    CandidateEducationDTO createCandidateEducation(UUID candidateId, CandidateEducationDTO candidateEducationDTO);
     void deleteCandidateEducation(Integer educationId);
     CandidateEducationDTO retrieveCandidateEducation(Integer educationId);
     List<CandidateEducationDTO> retrieveCandidateEducationsByCandidateId(UUID candidateId);

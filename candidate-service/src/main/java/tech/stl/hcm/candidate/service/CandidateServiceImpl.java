@@ -26,17 +26,20 @@ public class CandidateServiceImpl implements CandidateService {
     @Override
     @Transactional
     public CandidateDTO createCandidate(CandidateDTO candidateDTO) {
-        if (Objects.nonNull(candidateRepository.findByEmail(candidateDTO.getEmail()))) {
-            log.error("Candidate already exists with email: {}", candidateDTO.getEmail());
-            throw new RuntimeException("Candidate already exists with email: " + candidateDTO.getEmail());
+        if (candidateRepository.findByEmail(candidateDTO.getEmail()).isPresent()) {
+            log.warn("Candidate already exists with email: {}. Skipping creation.", candidateDTO.getEmail());
+            return candidateDTO;
         }
+
         Candidate candidate = modelMapper.map(candidateDTO, Candidate.class);
-        if (!Objects.isNull(candidate.getCandidateId())) {
-            Candidate savedCandidate = candidateRepository.save(candidate);
-            log.info("New Candidate has been created: {}", savedCandidate.getEmail());
-            return modelMapper.map(savedCandidate, CandidateDTO.class);
+
+        if (Objects.isNull(candidate.getCandidateId())) {
+            candidate.setCandidateId(UUID.randomUUID());
         }
-        throw new RuntimeException("Failed to create a Candidate with email: " + candidateDTO.getEmail());
+
+        Candidate savedCandidate = candidateRepository.save(candidate);
+        log.info("New Candidate has been created: {}", savedCandidate.getEmail());
+        return modelMapper.map(savedCandidate, CandidateDTO.class);
     }
 
     @Override

@@ -1,5 +1,7 @@
 package tech.stl.hcm.common.db.entities;
 
+import java.util.UUID;
+
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -13,14 +15,14 @@ public class CandidateSkill extends BaseEntity {
     @EmbeddedId
     private CandidateSkillId id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("candidateId")
-    @JoinColumn(name = "candidate_id")
-    private Candidate candidate;
+    @JoinColumn(name = "candidate_id", nullable = false)
+    private UUID candidateId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("skillId")
-    @JoinColumn(name = "skill_id")
+    @JoinColumn(name = "skill_id", nullable = false)
     private Skill skill;
 
     @Column(name = "proficiency_level", length = 50)

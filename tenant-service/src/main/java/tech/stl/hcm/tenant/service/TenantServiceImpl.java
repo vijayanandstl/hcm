@@ -23,6 +23,10 @@ public class TenantServiceImpl implements TenantService {
 
     @Override
     public TenantDTO createTenant(TenantDTO tenantDto) {
+        Optional<Tenant> existingTenant = tenantRepository.findByName(tenantDto.getName());
+        if (existingTenant.isPresent()) {
+            return modelMapper.map(existingTenant.get(), TenantDTO.class);
+        }
         Tenant tenant = modelMapper.map(tenantDto, Tenant.class);
         tenant.setTenantId(UUID.randomUUID());
         tenant = tenantRepository.save(tenant);

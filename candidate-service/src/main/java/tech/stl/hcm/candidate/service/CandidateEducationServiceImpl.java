@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import tech.stl.hcm.common.db.entities.Candidate;
 import tech.stl.hcm.common.db.entities.CandidateEducation;
 import tech.stl.hcm.common.db.repositories.CandidateEducationRepository;
+import tech.stl.hcm.common.db.repositories.CandidateRepository;
 import tech.stl.hcm.common.dto.CandidateEducationDTO;
 
 import java.util.List;
@@ -19,17 +20,18 @@ import java.util.stream.Collectors;
 public class CandidateEducationServiceImpl implements CandidateEducationService {
 
     private final CandidateEducationRepository candidateEducationRepository;
+    private final CandidateRepository candidateRepository;
     private final ModelMapper modelMapper;
 
     @Override
-    public CandidateEducationDTO createCandidateEducation(CandidateEducationDTO candidateEducationDTO) {
+    public CandidateEducationDTO createCandidateEducation(UUID candidateId, CandidateEducationDTO candidateEducationDTO) {
+        Candidate candidate = candidateRepository.findById(candidateId)
+                .orElseThrow(() -> new RuntimeException("Candidate not found with id: " + candidateId));
         CandidateEducation candidateEducation = modelMapper.map(candidateEducationDTO, CandidateEducation.class);
-        Candidate candidate = new Candidate();
-        candidate.setCandidateId(candidateEducationDTO.getCandidateId());
-        candidateEducation.setCandidate(candidate);
-        candidateEducation = candidateEducationRepository.save(candidateEducation);
-        log.info("New Candidate Education has been created for candidate: {}", candidateEducation.getCandidate().getCandidateId());
-        return modelMapper.map(candidateEducation,CandidateEducationDTO.class);
+        candidateEducation.setCandidateId(candidate.getCandidateId());
+        CandidateEducation savedEducation = candidateEducationRepository.save(candidateEducation);
+        log.info("New Candidate Education has been created for candidate: {}", savedEducation.getCandidateId());
+        return modelMapper.map(savedEducation, CandidateEducationDTO.class);
     }
 
     @Override
@@ -48,7 +50,7 @@ public class CandidateEducationServiceImpl implements CandidateEducationService 
 
     @Override
     public List<CandidateEducationDTO> retrieveCandidateEducationsByCandidateId(UUID candidateId) {
-        return candidateEducationRepository.findByCandidate_CandidateId(candidateId)
+        return candidateEducationRepository.findByCandidateId(candidateId)
                 .stream()
                 .map(education -> modelMapper.map(education, CandidateEducationDTO.class))
                 .collect(Collectors.toList());
@@ -56,14 +58,15 @@ public class CandidateEducationServiceImpl implements CandidateEducationService 
 
     @Override
     public CandidateEducationDTO updateCandidateEducation(CandidateEducationDTO candidateEducationDTO) {
-        CandidateEducation education = candidateEducationRepository.findById(candidateEducationDTO.getEducationId()).orElse(null);
+        List<CandidateEducation> educations = candidateEducationRepository.findByCandidateId(candidateEducationDTO.getCandidateId());
+        CandidateEducation education = educations.isEmpty() ? null : educations.get(0);
         if (education != null) {
             modelMapper.map(candidateEducationDTO, education);
             education = candidateEducationRepository.save(education);
             log.info("Candidate Education has been updated: {}", education.getEducationId());
-            return modelMapper.map(education,CandidateEducationDTO.class);
+            return modelMapper.map(education, CandidateEducationDTO.class);
         } else {
-            log.info("Candidate Education not found for update: {}", candidateEducationDTO.getEducationId());
+            log.info("Candidate Education not found for update: {}", candidateEducationDTO.getCandidateId());
         }
         return null;
     }

@@ -45,7 +45,6 @@
         <h2.version>2.1.214</h2.version>
         <springdoc-openapi-maven-plugin.version>1.4</springdoc-openapi-maven-plugin.version>
         <maven-source-plugin.version>3.3.0</maven-source-plugin.version>
-        <sonar.host.url>http://10.19.5.50:30006</sonar.host.url>
     </properties>
 
     <dependencyManagement>
@@ -185,19 +184,6 @@
         </dependencies>
     </dependencyManagement>
 
-    <distributionManagement>
-        <repository>
-            <id>nexus</id>
-            <name>Nexus Releases Repository</name>
-            <url>http://10.19.5.50:30008/repository/maven-releases/</url>
-        </repository>
-        <snapshotRepository>
-            <id>nexus</id>
-            <name>Nexus Snapshots Repository</name>
-            <url>http://10.19.5.50:30008/repository/maven-snapshots/</url>
-        </snapshotRepository>
-    </distributionManagement>
-
     <build>
         <pluginManagement>
             <plugins>
@@ -227,11 +213,6 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-source-plugin</artifactId>
                     <version>${maven-source-plugin.version}</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.sonarsource.scanner.maven</groupId>
-                    <artifactId>sonar-maven-plugin</artifactId>
-                    <version>3.9.1.2184</version>
                 </plugin>
             </plugins>
         </pluginManagement>

@@ -9,7 +9,7 @@ public class ApprovalDTO {
     private Integer approvalId;
     private Integer requisitionId;
     private UUID approverId;
-    private ApprovalStatusDTO status;
+    private Integer statusId;
     private LocalDate actionDate;
     private String comments;
 } 

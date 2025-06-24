@@ -9,7 +9,7 @@ public class OnboardingDTO {
     private Integer onboardingId;
     private Integer offerId;
     private UUID candidateId;
-    private OnboardingStatusDTO status;
+    private Integer statusId;
     private LocalDate startDate;
     private LocalDate orientationDate;
 } 

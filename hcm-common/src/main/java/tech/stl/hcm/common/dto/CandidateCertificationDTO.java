@@ -1,6 +1,7 @@
 package tech.stl.hcm.common.dto;
 
 import lombok.Data;
+
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -12,4 +13,6 @@ public class CandidateCertificationDTO {
     private String issuedBy;
     private LocalDate issueDate;
     private LocalDate expiryDate;
+    private String certificationName;
+    private String issuingOrganization;
 } 

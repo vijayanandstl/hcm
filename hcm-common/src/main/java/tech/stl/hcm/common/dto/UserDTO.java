@@ -12,7 +12,7 @@ public class UserDTO {
     private String email;
     private String firstName;
     private String lastName;
-    private UserRoleDTO role;
-    private UserTypeDTO type;
-    private UserStatusDTO status;
+    private Integer roleId;
+    private Integer typeId;
+    private Integer statusId;
 } 

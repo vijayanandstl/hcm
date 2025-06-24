@@ -8,10 +8,15 @@ import org.apache.kafka.common.serialization.Deserializer;
 
 public class CustomDeserializer<T> implements Deserializer<T> {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
     private Class<T> type;
     
+    public CustomDeserializer(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
+
     @Override
+    @SuppressWarnings("unchecked")
     public void configure(Map<String, ?> configs, boolean isKey) {
         String className = (String) configs.get("generic.deserializer.target.class");
         try {

@@ -7,8 +7,8 @@ import java.util.UUID;
 @Data
 public class JobRequisitionDTO {
     private Integer requisitionId;
-    private UUID tenantId;
-    private UUID organizationId;
+    private Integer tenantId;
+    private Integer organizationId;
     private Integer positionId;
     private Integer departmentId;
     private String title;
@@ -16,7 +16,7 @@ public class JobRequisitionDTO {
     private String employmentType;
     private LocalDate postedDate;
     private LocalDate closingDate;
-    private JobRequisitionStatusDTO status;
+    private Integer statusId;
     private UUID hiringManagerId;
     private UUID vendorId;
 } 

@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.UUID;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -23,15 +24,15 @@ public class Offer extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "candidate_id", nullable = false)
-    private Candidate candidate;
+    private UUID candidateId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "requisition_id", nullable = false)
-    private JobRequisition jobRequisition;
+    private Integer jobRequisitionId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "status_id", nullable = false)
-    private OfferStatus status;
+    private Integer offerStatusId;
 
     @Column(name = "salary", precision = 12, scale = 2)
     private BigDecimal salary;

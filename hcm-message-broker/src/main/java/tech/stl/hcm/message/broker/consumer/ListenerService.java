@@ -1,9 +1,11 @@
 package tech.stl.hcm.message.broker.consumer;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.AcknowledgingMessageListener;
@@ -20,37 +22,38 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ListenerService {
 
-    private static final String BOOTSTRAP_SERVERS = "10.19.5.50:30000";
+    @Value("${spring.kafka.bootstrap-servers}")
+    private String bootstrapServers;
+    private final ObjectMapper objectMapper;
 
     public <T> void startListening(String topic, String groupId, Class<T> valueType, MessageHandler<T> handler) {
         Map<String, Object> props = new HashMap<>();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, CustomDeserializer.class.getName());
-        props.put("generic.deserializer.target.class", valueType.getName());
-        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false); // manual commit
+        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        props.put("generic.deserializer.target.class", valueType.getName());
 
-        ConsumerFactory<String, T> factory = new DefaultKafkaConsumerFactory<>(props);
+        CustomDeserializer<T> valueDeserializer = new CustomDeserializer<>(objectMapper);
+
+        ConsumerFactory<String, T> factory = new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), valueDeserializer);
 
         ContainerProperties containerProps = new ContainerProperties(topic);
         containerProps.setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
 
         containerProps.setMessageListener((AcknowledgingMessageListener<String, T>) (record, acknowledgment) -> {
+            log.debug("Received message from topic {}: key={}, value={}", record.topic(), record.key(), record.value());
             try {
-                //handler.handle(record.value());
-                if (handler instanceof MessageHandler) {
-                    ((MessageHandler<T>) handler).handle(record.value(), record.key());
-                }
+                handler.handle(record.value(), record.key());
 
-                String key = record.key();
-                log.info("Consumed and handled message: topic={}, key={}, partition={}, offset={}",
-                        record.topic(), key, record.partition(), record.offset());
-                acknowledgment.acknowledge(); // manual commit
-                log.info("Manually committed offset={}", record.offset());
+                if (acknowledgment != null) {
+                    acknowledgment.acknowledge();
+                    log.info("Successfully processed and acknowledged message from topic {}: key={}, partition={}, offset={}",
+                            record.topic(), record.key(), record.partition(), record.offset());
+                }
             } catch (Exception ex) {
-                log.error("Error handling record from topic {}: {}", topic, ex.getMessage(), ex);
+                log.error("Error handling record from topic {}: key={}, value={}. Error: {}",
+                        record.topic(), record.key(), record.value(), ex.getMessage(), ex);
             }
         });
 

@@ -5,10 +5,11 @@ metadata:
   labels:
     app: hcm-core
 spec:
-  type: ClusterIP
+  type: NodePort
   selector:
     app: hcm-core
   ports:
     - protocol: TCP
-      port: 8080
-      targetPort: 8080 
+      port: 8085
+      targetPort: 8085
+      nodePort: 30023 

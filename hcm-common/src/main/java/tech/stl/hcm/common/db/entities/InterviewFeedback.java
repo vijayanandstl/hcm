@@ -25,7 +25,7 @@ public class InterviewFeedback extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "candidate_id", nullable = false)
-    private Candidate candidate;
+    private UUID candidateId;
 
     @Column(name = "feedback", columnDefinition = "TEXT")
     private String feedback;

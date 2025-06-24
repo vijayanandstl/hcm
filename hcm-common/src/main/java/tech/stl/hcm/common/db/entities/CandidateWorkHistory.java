@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -19,7 +20,7 @@ public class CandidateWorkHistory extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "candidate_id", nullable = false)
-    private Candidate candidate;
+    private UUID candidateId;
 
     @Column(name = "company_name", length = 200)
     private String companyName;

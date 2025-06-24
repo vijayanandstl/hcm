@@ -34,31 +34,58 @@ pipeline {
             steps {
                 script {
                     withCredentials([file(credentialsId: 'kubeconfig-jenkins', variable: 'KUBECONFIG')]) {
+                        sh 'echo ==== Jenkins Kubeconfig Diagnostics ===='
+                        sh 'kubectl --kubeconfig=$KUBECONFIG config get-contexts'
+                        sh 'kubectl --kubeconfig=$KUBECONFIG config current-context'
+                        sh 'kubectl --kubeconfig=$KUBECONFIG cluster-info'
+                        sh 'kubectl --kubeconfig=$KUBECONFIG get ns'
+                        sh 'kubectl --kubeconfig=$KUBECONFIG get all --all-namespaces'
+                        sh 'ls -l k8s/'
                         sh """
                             echo "Verifying cluster access..."
                             kubectl --kubeconfig=$KUBECONFIG cluster-info || exit 1
+                            
                             echo "Creating namespace if it doesn't exist..."
-                            kubectl --kubeconfig=$KUBECONFIG create namespace $KUBE_NAMESPACE --dry-run=client -o yaml | kubectl --kubeconfig=$KUBECONFIG apply -f - || exit 1
+                            kubectl --kubeconfig=$KUBECONFIG create namespace hcm --dry-run=client -o yaml | kubectl --kubeconfig=$KUBECONFIG apply -f - || exit 1
+                            
                             echo "Applying ConfigMap..."
-                            kubectl --kubeconfig=$KUBECONFIG apply -f k8s/organization-deployment/configmap.yaml || exit 1
+                            kubectl --kubeconfig=$KUBECONFIG apply -n hcm -f k8s/configmap.yaml || exit 1
+                            
                             echo "Applying Secrets (if present)..."
-                            if [ -f k8s/organization-deployment/secrets.yaml ]; then
-                              kubectl --kubeconfig=$KUBECONFIG apply -f k8s/organization-deployment/secrets.yaml || exit 1
+                            if [ -f k8s/secrets.yaml ]; then
+                              kubectl --kubeconfig=$KUBECONFIG apply -n hcm -f k8s/secrets.yaml || exit 1
                             fi
+                            
                             echo "Applying Service..."
-                            kubectl --kubeconfig=$KUBECONFIG apply -f k8s/organization-deployment/service.yaml || exit 1
+                            kubectl --kubeconfig=$KUBECONFIG apply -n hcm -f k8s/service.yaml || exit 1
+                            
                             echo "Checking if deployment exists..."
-                            if ! kubectl --kubeconfig=$KUBECONFIG get deployment organization-service -n $KUBE_NAMESPACE &>/dev/null; then
+                            if ! kubectl --kubeconfig=$KUBECONFIG get deployment organization-service -n hcm &>/dev/null; then
                                 echo "Deployment does not exist. Creating initial deployment..."
-                                kubectl --kubeconfig=$KUBECONFIG apply -f k8s/organization-deployment/deployment.yaml || exit 1
+                                kubectl --kubeconfig=$KUBECONFIG apply -n hcm -f k8s/deployment.yaml || exit 1
                             else
                                 echo "Updating existing deployment with new image..."
                                 kubectl --kubeconfig=$KUBECONFIG set image deployment/organization-service \
                                     organization-service=$DOCKER_IMAGE:$DOCKER_TAG \
-                                    -n $KUBE_NAMESPACE || exit 1
+                                    -n hcm || exit 1
                             fi
+                            
+                            echo "Waiting for deployment resource to be available..."
+                            for i in {1..10}; do
+                              kubectl --kubeconfig=$KUBECONFIG get deployment organization-service -n hcm && break
+                              echo "Deployment not found yet. Waiting 3 seconds..."
+                              sleep 3
+                            done
+                            
+                            echo "Recent events in namespace..."
+                            kubectl --kubeconfig=$KUBECONFIG get events -n hcm --sort-by=.metadata.creationTimestamp | tail -20
+                            
+                            echo "All resources in namespace..."
+                            kubectl --kubeconfig=$KUBECONFIG get all -n hcm
+                            
                             echo "Waiting for deployment to complete..."
-                            kubectl --kubeconfig=$KUBECONFIG rollout status deployment/organization-service -n $KUBE_NAMESPACE || exit 1
+                            kubectl --kubeconfig=$KUBECONFIG rollout status deployment/organization-service -n hcm || exit 1
+                            
                             echo "Deployment completed successfully!"
                         """
                     }

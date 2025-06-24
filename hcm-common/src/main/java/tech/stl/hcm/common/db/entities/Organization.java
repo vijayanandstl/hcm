@@ -16,9 +16,9 @@ public class Organization extends BaseEntity {
     @Column(name = "organization_id")
     private UUID organizationId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tenant_id", nullable = false)
-    private Tenant tenant;
+    private UUID tenantId;
 
     @Column(name = "name", length = 200, nullable = false)
     private String name;
@@ -26,7 +26,7 @@ public class Organization extends BaseEntity {
     @Column(name = "address", length = 500)
     private String address;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "status_id", nullable = false)
     private OrganizationStatus status;
 } 
