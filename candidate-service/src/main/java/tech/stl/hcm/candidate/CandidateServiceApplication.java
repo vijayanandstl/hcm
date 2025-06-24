@@ -5,11 +5,9 @@ import org.springframework.boot.actuate.autoconfigure.security.servlet.Managemen
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication(exclude = {SecurityAutoConfiguration.class, ManagementWebSecurityAutoConfiguration.class})
-@ComponentScan(basePackages = {"tech.stl.hcm.candidate", "tech.stl.hcm.consumers", "tech.stl.hcm.message.broker"})
 @EnableJpaRepositories("tech.stl.hcm.common.db.repositories")
 @EntityScan("tech.stl.hcm.common.db.entities")
 public class CandidateServiceApplication {

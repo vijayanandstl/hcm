@@ -6,13 +6,9 @@ import java.util.List;
 import java.util.UUID;
 
 public interface CandidateCertificationService {
-    void createCandidateCertification(UUID candidateId, CandidateCertificationDTO candidateCertificationDTO);
-
+    CandidateCertificationDTO createCandidateCertification(UUID candidateId, CandidateCertificationDTO candidateCertificationDTO);
     void deleteCandidateCertification(Integer certificationId);
-
     CandidateCertificationDTO retrieveCandidateCertification(Integer certificationId);
-
     List<CandidateCertificationDTO> retrieveCandidateCertificationsByCandidateId(UUID candidateId);
-
-    void updateCandidateCertification(Integer certificationId, CandidateCertificationDTO candidateCertificationDTO);
+    CandidateCertificationDTO updateCandidateCertification(Integer certificationId, CandidateCertificationDTO candidateCertificationDTO);
 } 

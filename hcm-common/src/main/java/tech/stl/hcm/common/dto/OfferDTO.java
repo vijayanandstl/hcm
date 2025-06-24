@@ -9,9 +9,9 @@ import java.util.UUID;
 public class OfferDTO {
     private Integer offerId;
     private Integer applicationId;
-    private UUID candidateId;    
+    private UUID candidateId;
     private Integer requisitionId;
-    private Integer statusId;
+    private OfferStatusDTO status;
     private BigDecimal salary;
     private String currency;
     private LocalDate offerDate;

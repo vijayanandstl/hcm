@@ -14,6 +14,4 @@ public class CandidateWorkHistoryDTO {
     private LocalDate startDate;
     private LocalDate endDate;
     private String responsibilities;
-    private String description;
-    private String jobTitle;
 } 

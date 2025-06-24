@@ -2,12 +2,9 @@ package tech.stl.hcm.candidate.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import tech.stl.hcm.candidate.service.CandidateCertificationService;
+import org.springframework.web.bind.annotation.*;
 import tech.stl.hcm.common.dto.CandidateCertificationDTO;
+import tech.stl.hcm.candidate.service.CandidateCertificationService;
 
 import java.util.List;
 import java.util.UUID;

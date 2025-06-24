@@ -11,7 +11,7 @@ public class InterviewDTO {
     private UUID candidateId;
     private Integer requisitionId;
     private UUID interviewerId;
-    private Integer statusId;
+    private InterviewStatusDTO status;
     private LocalDate scheduledDate;
     private String mode;
     private String location;

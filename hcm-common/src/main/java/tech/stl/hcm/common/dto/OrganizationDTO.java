@@ -9,5 +9,5 @@ public class OrganizationDTO {
     private UUID tenantId;
     private String name;
     private String address;
-    private Integer statusId;
+    private OrganizationStatusDTO status;
 } 

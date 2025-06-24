@@ -1,7 +1,5 @@
 package tech.stl.hcm.common.db.entities;
 
-import java.util.UUID;
-
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -19,11 +17,11 @@ public class Department extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tenant_id", nullable = false)
-    private UUID tenantId;
+    private Tenant tenant;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organization_id", nullable = false)
-    private UUID organizationId;
+    private Organization organization;
 
     @Column(name = "name", length = 200, nullable = false)
     private String name;

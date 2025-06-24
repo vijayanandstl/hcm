@@ -9,7 +9,7 @@ public class ApplicationDTO {
     private Integer applicationId;
     private UUID candidateId;
     private Integer requisitionId;
-    private Integer statusId;
+    private ApplicationStatusDTO status;
     private LocalDate appliedDate;
     private String source;
 } 

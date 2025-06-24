@@ -25,16 +25,16 @@ public class CandidateCertificationServiceImpl implements CandidateCertification
     private final ModelMapper modelMapper;
 
     @Override
-    public void createCandidateCertification(UUID candidateId, CandidateCertificationDTO candidateCertificationDTO) {
+    public CandidateCertificationDTO createCandidateCertification(UUID candidateId, CandidateCertificationDTO candidateCertificationDTO) {
         Candidate candidate = candidateRepository.findById(candidateId)
                 .orElseThrow(() -> new CandidateNotFoundException("Candidate not found with id: " + candidateId));
 
         CandidateCertification candidateCertification = modelMapper.map(candidateCertificationDTO, CandidateCertification.class);
-        candidateCertification.setCandidateId(candidate.getCandidateId());
+        candidateCertification.setCandidate(candidate);
 
         CandidateCertification savedCertification = candidateCertificationRepository.save(candidateCertification);
-        log.info("New Candidate Certification has been created for candidate: {}", savedCertification.getCandidateId());
-        modelMapper.map(savedCertification, CandidateCertificationDTO.class);
+        log.info("New Candidate Certification has been created for candidate: {}", savedCertification.getCandidate().getCandidateId());
+        return modelMapper.map(savedCertification, CandidateCertificationDTO.class);
     }
 
     @Override
@@ -52,19 +52,19 @@ public class CandidateCertificationServiceImpl implements CandidateCertification
 
     @Override
     public List<CandidateCertificationDTO> retrieveCandidateCertificationsByCandidateId(UUID candidateId) {
-        return candidateCertificationRepository.findByCandidateId(candidateId).stream()
+        return candidateCertificationRepository.findByCandidate_CandidateId(candidateId).stream()
                 .map(cert -> modelMapper.map(cert, CandidateCertificationDTO.class))
                 .collect(Collectors.toList());
     }
 
     @Override
-    public void updateCandidateCertification(Integer certificationId, CandidateCertificationDTO candidateCertificationDTO) {
+    public CandidateCertificationDTO updateCandidateCertification(Integer certificationId, CandidateCertificationDTO candidateCertificationDTO) {
         CandidateCertification certification = candidateCertificationRepository.findById(certificationId)
-            .orElseThrow(() -> new CandidateNotFoundException("Certification not found for update with id: " + certificationId));
+                .orElseThrow(() -> new CandidateNotFoundException("Certification not found for update with id: " + certificationId));
 
         modelMapper.map(candidateCertificationDTO, certification);
         CandidateCertification updatedCertification = candidateCertificationRepository.save(certification);
         log.info("Candidate Certification has been updated: {}", updatedCertification.getCertificationId());
-        modelMapper.map(updatedCertification, CandidateCertificationDTO.class);
+        return modelMapper.map(updatedCertification, CandidateCertificationDTO.class);
     }
 } 

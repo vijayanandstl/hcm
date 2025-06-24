@@ -35,10 +35,6 @@ public class OrganizationService {
     }
 
     public OrganizationDTO createOrganization(OrganizationDTO organizationDTO) {
-        Optional<Organization> existingOrganization = organizationRepository.findByName(organizationDTO.getName());
-        if (existingOrganization.isPresent()) {
-            return modelMapper.map(existingOrganization.get(), OrganizationDTO.class);
-        }
         Organization organization = modelMapper.map(organizationDTO, Organization.class);
         organization = organizationRepository.save(organization);
         return modelMapper.map(organization, OrganizationDTO.class);

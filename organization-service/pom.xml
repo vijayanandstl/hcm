@@ -145,27 +145,27 @@
                         <artifactId>springdoc-openapi-maven-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>generate-json-docs</id>
+                                <id>generate-docs-json</id>
                                 <phase>integration-test</phase>
                                 <goals>
                                     <goal>generate</goal>
                                 </goals>
                                 <configuration>
-                                    <apiDocsUrl>http://localhost:8100/api/v3/api-docs</apiDocsUrl>
-                                    <outputFileName>openapi.json</outputFileName>
                                     <outputDir>${project.basedir}/src/main/resources</outputDir>
+                                    <outputFileName>openapi.json</outputFileName>
+                                    <apiDocsUrl>http://localhost:8100/api/v3/api-docs</apiDocsUrl>
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>generate-yaml-docs</id>
+                                <id>generate-docs-yaml</id>
                                 <phase>integration-test</phase>
                                 <goals>
                                     <goal>generate</goal>
                                 </goals>
                                 <configuration>
-                                    <apiDocsUrl>http://localhost:8100/api/v3/api-docs.yaml</apiDocsUrl>
-                                    <outputFileName>openapi.yaml</outputFileName>
                                     <outputDir>${project.basedir}/src/main/resources</outputDir>
+                                    <outputFileName>openapi.yaml</outputFileName>
+                                    <apiDocsUrl>http://localhost:8100/api/v3/api-docs.yaml</apiDocsUrl>
                                 </configuration>
                             </execution>
                         </executions>

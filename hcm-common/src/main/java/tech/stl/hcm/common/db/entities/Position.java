@@ -3,7 +3,6 @@ package tech.stl.hcm.common.db.entities;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import java.util.UUID;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -18,15 +17,15 @@ public class Position extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tenant_id", nullable = false)
-    private UUID tenantId;
+    private Tenant tenant;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organization_id", nullable = false)
-    private UUID organizationId;
+    private Organization organization;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "department_id", nullable = false)
-    private Integer departmentId;
+    private Department department;
 
     @Column(name = "title", length = 200, nullable = false)
     private String title;
@@ -42,7 +41,7 @@ public class Position extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "status_id", nullable = false)
-    private Integer statusId;
+    private PositionStatus status;
     
     @Column(name = "headcount")
     private Integer headcount;

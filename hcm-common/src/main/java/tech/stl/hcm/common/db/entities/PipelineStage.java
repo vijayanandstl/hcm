@@ -17,7 +17,7 @@ public class PipelineStage extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "requisition_id", nullable = false)
-    private Integer jobRequisitionId;
+    private JobRequisition jobRequisition;
 
     @Column(name = "name", length = 100, nullable = false)
     private String name;

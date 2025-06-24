@@ -10,6 +10,6 @@ spec:
     app: candidate-service
   ports:
     - protocol: TCP
-      port: 8081
-      targetPort: 8081
+      port: 8099
+      targetPort: 8099
       nodePort: 30020 

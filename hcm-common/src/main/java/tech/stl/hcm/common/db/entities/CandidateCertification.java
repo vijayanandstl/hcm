@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate;
-import java.util.UUID;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -14,10 +13,13 @@ import java.util.UUID;
 public class CandidateCertification extends BaseEntity {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "certification_id")
     private Integer certificationId;
 
+    @ManyToOne
     @JoinColumn(name = "candidate_id", nullable = false)
-    private UUID candidateId;
+    private Candidate candidate;
 
     @Column(name = "certificate_name", length = 200)
     private String certificateName;
@@ -30,10 +32,4 @@ public class CandidateCertification extends BaseEntity {
 
     @Column(name = "expiry_date")
     private LocalDate expiryDate;
-
-    @Column(name = "certification_name", length = 100)
-    private String certificationName;
-
-    @Column(name = "issuing_organization", length = 100)
-    private String issuingOrganization;
 } 

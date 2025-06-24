@@ -26,9 +26,9 @@ public class CandidateWorkHistoryServiceImpl implements CandidateWorkHistoryServ
         CandidateWorkHistory candidateWorkHistory = modelMapper.map(candidateWorkHistoryDTO, CandidateWorkHistory.class);
         Candidate candidate = new Candidate();
         candidate.setCandidateId(candidateWorkHistoryDTO.getCandidateId());
-        candidateWorkHistory.setCandidateId(candidate.getCandidateId());
+        candidateWorkHistory.setCandidate(candidate);
         candidateWorkHistory = candidateWorkHistoryRepository.save(candidateWorkHistory);
-        log.info("New Candidate Work History has been created for candidate: {}", candidateWorkHistory.getCandidateId());
+        log.info("New Candidate Work History has been created for candidate: {}", candidateWorkHistory.getCandidate().getCandidateId());
         return modelMapper.map(candidateWorkHistory, CandidateWorkHistoryDTO.class);
     }
 
@@ -48,7 +48,7 @@ public class CandidateWorkHistoryServiceImpl implements CandidateWorkHistoryServ
 
     @Override
     public List<CandidateWorkHistoryDTO> retrieveCandidateWorkHistoriesByCandidateId(UUID candidateId) {
-        return candidateWorkHistoryRepository.findByCandidateId(candidateId)
+        return candidateWorkHistoryRepository.findByCandidate_CandidateId(candidateId)
                 .stream()
                 .map(workHistory -> modelMapper.map(workHistory, CandidateWorkHistoryDTO.class))
                 .collect(Collectors.toList());

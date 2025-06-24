@@ -9,8 +9,6 @@ import tech.stl.hcm.common.dto.CandidateEducationDTO;
 import tech.stl.hcm.message.broker.consumer.MessageHandler;
 import tech.stl.hcm.message.broker.consumer.TopicListener;
 
-import java.util.UUID;
-
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -27,10 +25,9 @@ public class CreateCandidateEducationConsumer implements MessageHandler<Candidat
     @Override
     public void handle(CandidateEducationDTO candidateEducation, String key) {
         try {
-            String candidateId = candidateEducation.getCandidateId().toString();
-            MDC.put("candidateId", candidateId);
+            MDC.put("candidateId", candidateEducation.getCandidateId().toString());
             log.info("Consumed candidate education for candidate: {}", candidateEducation.getCandidateId());
-            candidateEducationService.createCandidateEducation(UUID.fromString(candidateId), candidateEducation);
+            candidateEducationService.createCandidateEducation(candidateEducation);
         } finally {
             MDC.clear();
         }

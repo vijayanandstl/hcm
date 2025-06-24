@@ -27,8 +27,9 @@ public class CandidateSkillServiceImpl implements CandidateSkillService {
         CandidateSkill candidateSkill = modelMapper.map(candidateSkillDTO, CandidateSkill.class);
         Candidate candidate = new Candidate();
         candidate.setCandidateId(candidateSkillDTO.getCandidateId());
+        candidateSkill.setCandidate(candidate);
         candidateSkill = candidateSkillRepository.save(candidateSkill);
-        log.info("New Candidate Skill has been created for candidate: {}", candidateSkill.getCandidateId());
+        log.info("New Candidate Skill has been created for candidate: {}", candidateSkill.getCandidate().getCandidateId());
         return modelMapper.map(candidateSkill, CandidateSkillDTO.class);
     }
 
@@ -48,7 +49,7 @@ public class CandidateSkillServiceImpl implements CandidateSkillService {
 
     @Override
     public List<CandidateSkillDTO> retrieveCandidateSkillsByCandidateId(UUID candidateId) {
-        return candidateSkillRepository.findByCandidateId(candidateId)
+        return candidateSkillRepository.findByCandidate_CandidateId(candidateId)
                 .stream()
                 .map(skill -> modelMapper.map(skill, CandidateSkillDTO.class))
                 .collect(Collectors.toList());
@@ -56,7 +57,7 @@ public class CandidateSkillServiceImpl implements CandidateSkillService {
 
     @Override
     public CandidateSkillDTO updateCandidateSkill(CandidateSkillDTO candidateSkillDTO) {
-        CandidateSkillId candidateSkillId = new CandidateSkillId();
+        CandidateSkillId candidateSkillId = new CandidateSkillId(candidateSkillDTO.getCandidateId(), candidateSkillDTO.getSkillId());
         CandidateSkill skill = candidateSkillRepository.findById(candidateSkillId).orElse(null);
         if (skill != null) {
             modelMapper.map(candidateSkillDTO, skill);

@@ -20,8 +20,8 @@ import tech.stl.hcm.message.broker.consumer.TopicListener;
         enableProperty = "candidate.kafka.enable"
 )
 public class CreateCandidateConsumer implements MessageHandler<CandidateDTO> {
-    private final CandidateService candidateService;
 
+    private final CandidateService candidateService;
     @Override
     public void handle(CandidateDTO candidate, String key) {
         try {

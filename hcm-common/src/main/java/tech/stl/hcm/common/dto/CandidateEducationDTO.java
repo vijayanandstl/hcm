@@ -6,7 +6,7 @@ import java.util.UUID;
 
 @Data
 public class CandidateEducationDTO {
-    private UUID educationId;
+    private Integer educationId;
     private UUID candidateId;
     private String institution;
     private String degree;
@@ -15,6 +15,4 @@ public class CandidateEducationDTO {
     private LocalDate endDate;
     private String grade;
     private String notes;
-    private String description;
-    private String institutionName;
 } 

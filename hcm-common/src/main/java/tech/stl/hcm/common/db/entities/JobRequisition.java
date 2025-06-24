@@ -19,19 +19,19 @@ public class JobRequisition extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tenant_id", nullable = false)
-    private UUID tenantId;
+    private Tenant tenant;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organization_id", nullable = false)
-    private UUID organizationId;
+    private Organization organization;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "position_id", nullable = false)
-    private Integer positionId;
+    private Position position;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "department_id", nullable = false)
-    private Integer departmentId;
+    private Department department;
 
     @Column(name = "title", length = 200, nullable = false)
     private String title;

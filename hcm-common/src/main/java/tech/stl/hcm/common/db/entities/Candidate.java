@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @EqualsAndHashCode(callSuper = true)
@@ -14,16 +15,17 @@ import java.util.UUID;
 public class Candidate extends BaseEntity {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "candidate_id")
     private UUID candidateId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "tenant_id", nullable = false)
-    private UUID tenantId;
+    private Tenant tenant;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "organization_id", nullable = false)
-    private UUID organizationId;
+    private Organization organization;
 
     @Column(name = "first_name", length = 100, nullable = false)
     private String firstName;
@@ -48,5 +50,10 @@ public class Candidate extends BaseEntity {
 
     @Column(name = "nationality", length = 100)
     private String nationality;
-
+    
+    @Column(name = "deleted_at")
+    private OffsetDateTime deletedAt;
+    
+    @Column(name = "deleted_by")
+    private UUID deletedBy;
 } 
