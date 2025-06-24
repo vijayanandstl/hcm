@@ -62,7 +62,7 @@ pipeline {
                         sh 'kubectl --kubeconfig=$KUBECONFIG cluster-info'
                         sh 'kubectl --kubeconfig=$KUBECONFIG get ns'
                         sh 'kubectl --kubeconfig=$KUBECONFIG get all --all-namespaces'
-                        sh 'ls -l k8s/'
+                        sh 'ls -l tenant-service/k8s/'
                         sh """
                             echo "Verifying cluster access..."
                             kubectl --kubeconfig=$KUBECONFIG cluster-info || exit 1
@@ -71,20 +71,20 @@ pipeline {
                             kubectl --kubeconfig=$KUBECONFIG create namespace hcm --dry-run=client -o yaml | kubectl --kubeconfig=$KUBECONFIG apply -f - || exit 1
                             
                             echo "Applying ConfigMap..."
-                            kubectl --kubeconfig=$KUBECONFIG apply -n hcm -f k8s/configmap.yaml || exit 1
+                            kubectl --kubeconfig=$KUBECONFIG apply -n hcm -f tenant-service/k8s/configmap.yaml || exit 1
                             
                             echo "Applying Secrets (if present)..."
-                            if [ -f k8s/secrets.yaml ]; then
-                              kubectl --kubeconfig=$KUBECONFIG apply -n hcm -f k8s/secrets.yaml || exit 1
+                            if [ -f tenant-service/k8s/secrets.yaml ]; then
+                              kubectl --kubeconfig=$KUBECONFIG apply -n hcm -f tenant-service/k8s/secrets.yaml || exit 1
                             fi
                             
                             echo "Applying Service..."
-                            kubectl --kubeconfig=$KUBECONFIG apply -n hcm -f k8s/service.yaml || exit 1
+                            kubectl --kubeconfig=$KUBECONFIG apply -n hcm -f tenant-service/k8s/service.yaml || exit 1
                             
                             echo "Checking if deployment exists..."
                             if ! kubectl --kubeconfig=$KUBECONFIG get deployment tenant-service -n hcm &>/dev/null; then
                                 echo "Deployment does not exist. Creating initial deployment..."
-                                kubectl --kubeconfig=$KUBECONFIG apply -n hcm -f k8s/deployment.yaml || exit 1
+                                kubectl --kubeconfig=$KUBECONFIG apply -n hcm -f tenant-service/k8s/deployment.yaml || exit 1
                             else
                                 echo "Updating existing deployment with new image..."
                                 kubectl --kubeconfig=$KUBECONFIG set image deployment/tenant-service \
