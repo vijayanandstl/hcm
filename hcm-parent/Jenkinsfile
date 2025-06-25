@@ -1,0 +1,111 @@
+pipeline {
+    agent any
+    environment {
+        SONARQUBE_URL = 'http://10.19.5.50:30006'
+    }
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+        stage('Clean Maven Settings') {
+            steps {
+                script {
+                    // Clean up any corrupted settings.xml file
+                    sh '''
+                        if [ -f ~/.m2/settings.xml ]; then
+                            rm ~/.m2/settings.xml
+                            echo "Removed corrupted settings.xml"
+                        fi
+                    '''
+                }
+            }
+        }
+        stage('Build & Test') {
+            steps {
+                dir('hcm-parent') {
+                    sh 'mvn clean install'
+                }
+            }
+        }
+        stage('SonarQube Analysis') {
+            steps {
+                script {
+                    // Try with token as password (since user mentioned using token in place of password)
+                    try {
+                        withCredentials([usernamePassword(credentialsId: 'sonarqube-credentials', usernameVariable: 'SONAR_USER', passwordVariable: 'SONAR_TOKEN')]) {
+                            echo "Using token-based authentication"
+                            dir('hcm-parent') {
+                                sh '''
+                                    mvn sonar:sonar \
+                                      -Dsonar.host.url="${SONARQUBE_URL}" \
+                                      -Dsonar.login="${SONAR_TOKEN}" \
+                                      -Dsonar.projectKey="hcm-parent" \
+                                      -Dsonar.projectName="HCM Parent Project" \
+                                      -Dsonar.sources="src/main/java" \
+                                      -Dsonar.java.binaries="target/classes" \
+                                      -Dsonar.java.test.binaries="target/test-classes"
+                                '''
+                            }
+                        }
+                    } catch (Exception e) {
+                        echo "Token authentication failed, trying username/password method"
+                        withCredentials([usernamePassword(credentialsId: 'sonarqube-credentials', usernameVariable: 'SONAR_USER', passwordVariable: 'SONAR_PASS')]) {
+                            dir('hcm-parent') {
+                                sh '''
+                                    mvn sonar:sonar \
+                                      -Dsonar.host.url="${SONARQUBE_URL}" \
+                                      -Dsonar.login="${SONAR_USER}" \
+                                      -Dsonar.password="${SONAR_PASS}" \
+                                      -Dsonar.projectKey="hcm-parent" \
+                                      -Dsonar.projectName="HCM Parent Project" \
+                                      -Dsonar.sources="src/main/java" \
+                                      -Dsonar.java.binaries="target/classes" \
+                                      -Dsonar.java.test.binaries="target/test-classes"
+                                '''
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        stage('Deploy to Nexus') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'nexus-credentials', usernameVariable: 'NEXUS_USER', passwordVariable: 'NEXUS_PASS')]) {
+                    script {
+                        // Create Maven settings.xml with Nexus credentials
+                        writeFile file: 'settings.xml', text: """<?xml version="1.0" encoding="UTF-8"?>
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 
+          http://maven.apache.org/xsd/settings-1.0.0.xsd">
+    <servers>
+        <server>
+            <id>nexus</id>
+            <username>${NEXUS_USER}</username>
+            <password>${NEXUS_PASS}</password>
+        </server>
+    </servers>
+</settings>"""
+                        
+                        dir('hcm-parent') {
+                            sh 'mvn deploy -s ../settings.xml'
+                        }
+                    }
+                }
+            }
+        }
+    }
+    post {
+        always {
+            cleanWs()
+        }
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed! Check the logs for details.'
+        }
+    }
+} 

@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: organization-service
+  labels:
+    app: organization-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: organization-service
+  template:
+    metadata:
+      labels:
+        app: organization-service
+    spec:
+      containers:
+        - name: organization-service
+          image: techbu/hcm-organization-service:latest
+          ports:
+            - containerPort: 8100
+          envFrom:
+            - configMapRef:
+                name: organization-service-config
+            - secretRef:
+                name: organization-service-secrets 
