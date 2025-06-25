@@ -1,0 +1,80 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-headless
+  labels:
+    app: kafka
+spec:
+  clusterIP: None
+  ports:
+    - port: 9092
+      name: kafka
+  selector:
+    app: kafka
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: kafka
+spec:
+  serviceName: kafka-headless
+  replicas: 3
+  selector:
+    matchLabels:
+      app: kafka
+  template:
+    metadata:
+      labels:
+        app: kafka
+    spec:
+      containers:
+        - name: kafka
+          image: confluentinc/cp-kafka:7.5.1
+          ports:
+            - containerPort: 9092
+              name: kafka
+          env:
+            - name: KAFKA_ZOOKEEPER_CONNECT
+              value: "zookeeper:2181"
+            - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
+              value: "PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT"
+            - name: KAFKA_INTER_BROKER_LISTENER_NAME
+              value: "PLAINTEXT_INTERNAL"
+            - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
+              value: "3"
+            - name: KAFKA_DEFAULT_REPLICATION_FACTOR
+              value: "3"
+            - name: KAFKA_MIN_INSYNC_REPLICAS
+              value: "2"
+          envFrom:
+            - configMapRef:
+                name: kafka-config
+          volumeMounts:
+            - name: kafka-data
+              mountPath: /var/lib/kafka/data
+  volumeClaimTemplates:
+    - metadata:
+        name: kafka-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 50Gi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kafka-config
+data:
+  init.sh: |
+    #!/bin/bash
+    ID="${HOSTNAME##*-}"
+    DOMAIN=$(hostname -d)
+    PLAINTEXT_INTERNAL_PORT=29092
+    
+    # Configure broker ID
+    export KAFKA_BROKER_ID=$((ID + 1))
+    
+    # Configure listeners
+    export KAFKA_LISTENERS="PLAINTEXT://:9092,PLAINTEXT_INTERNAL://:$PLAINTEXT_INTERNAL_PORT"
+    export KAFKA_ADVERTISED_LISTENERS="PLAINTEXT://kafka-$ID.$DOMAIN:9092,PLAINTEXT_INTERNAL://kafka-$ID.$DOMAIN:$PLAINTEXT_INTERNAL_PORT" 

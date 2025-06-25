@@ -1,0 +1,44 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hcm-core-ingress
+  labels:
+    app: hcm-core
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: hcm-core.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: hcm-core
+                port:
+                  number: 8085
+          - path: /api/candidates
+            pathType: Prefix
+            backend:
+              service:
+                name: candidate-service
+                port:
+                  number: 8099
+          - path: /api/organizations
+            pathType: Prefix
+            backend:
+              service:
+                name: organization-service
+                port:
+                  number: 8100
+          - path: /api/tenants
+            pathType: Prefix
+            backend:
+              service:
+                name: tenant-service
+                port:
+                  number: 8098 
