@@ -1,8 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: tenant-service-config
-  labels:
-    app: tenant-service
-data:
-  SAMPLE_PROPERTY: "sample-value" 

@@ -1,8 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: hcm-core-config
-  labels:
-    app: hcm-core
-data:
-  SAMPLE_PROPERTY: "sample-value" 
